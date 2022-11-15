@@ -1,9 +1,12 @@
 {
   "extends": [
-      "airbnb-base"
+      "airbnb-base",
+      "plugin:import/recommended"
   ],
   "rules": {
     "no-console": "off",
+    "import/extensions": "off",
+    "import/prefer-default-export": "off",
     "quotes": ["error", "double"],
     "no-underscore-dangle": [
       "error",
