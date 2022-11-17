@@ -46,7 +46,7 @@ export const getUser = (req, res) => {
 };
 
 export const createUser = (req, res) => {
-  User.create(req.body, { runValidators: true })
+  User.create(req.body)
     .then((user) => {
       res.send(user);
     })
