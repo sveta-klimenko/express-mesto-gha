@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Проект по созданию бэкенда приложения для обмена фотографиями Mesto",
   "main": "app.js",
-  "prettier":{
+  "prettier": {
     "trailingComma": "all"
   },
   "scripts": {
@@ -23,8 +23,11 @@
     "nodemon": "^2.0.20"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",
     "express": "^4.18.2",
-    "mongoose": "^6.7.2"
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.7.2",
+    "validator": "^13.7.0"
   }
 }
