@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
+import { errors } from 'celebrate';
 import { constants } from 'http2';
 import { user } from './routes/users.js';
 import { createUser, loginUser } from './controllers/users.js';
@@ -31,6 +32,12 @@ app.all('/*', (req, res) => {
   res
     .status(constants.HTTP_STATUS_NOT_FOUND)
     .send({ message: 'Страница не найдена' });
+});
+
+app.use(errors());
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({ message: err.message });
+  next();
 });
 
 app.listen(PORT, () => {
