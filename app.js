@@ -9,6 +9,7 @@ import {
   signUpValidate,
   signInValidate,
 } from './utils/validator.js';
+import { auth } from './middlewares/auth.js';
 
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
@@ -19,10 +20,10 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.post('/signin', signInValidate, loginUser);
 app.post('/signup', signUpValidate, createUser);
 
+app.use(auth);
 app.use('/', user);
 app.use('/', card);
 
