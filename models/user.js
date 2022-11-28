@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 import validator from 'validator';
+import { linkRegExp } from '../utils/validator.js';
+import { UnauthorizedError } from '../errors/index.js';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -22,8 +25,7 @@ const userSchema = new mongoose.Schema({
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
       validator(v) {
-        const linkRegex = /^https?:\/\/(www.)?[\w\-._~:\/?#[\]@!$&'()*+,;=]*#?$/;
-        return linkRegex.test(v);
+        return linkRegExp.test(v);
       },
       message: 'Неверный формат ссылки на аватар',
     },
@@ -45,5 +47,21 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 });
+
+userSchema.statics.findUserByCredentials = function (email, password) {
+  return this.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        throw new UnauthorizedError('Введён неправильный эмейл или пароль');
+      }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new UnauthorizedError('Введён неправильный эмейл или пароль');
+          }
+          return user;
+        });
+    });
+};
 
 export const user = mongoose.model('user', userSchema);

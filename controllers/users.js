@@ -1,68 +1,101 @@
-import { constants } from 'http2';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { user } from '../models/user.js';
+import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+  ServerError,
+  UnauthorizedError,
+} from '../errors/index.js';
 
-function sendInternalServerError(res) {
-  res
-    .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-    .send({ message: 'Произошла серверная ошибка' });
-}
+const conflictErrorCode = 11000;
 
-function sendNotFoundError(res) {
-  res
-    .status(constants.HTTP_STATUS_NOT_FOUND)
-    .send({ message: 'Пользователя с этими данными не существует' });
-}
+const messageNotFoundError = 'Пользователя с этими данными не существует';
+const messageBadRequestError = 'Введены некорректные данные';
+const messageConflictError = 'Пользователь с этим email уже зарегестрирован';
+const messageUnauthorizedError = 'Неверный логин или пароль';
 
-function sendBadRequestError(res) {
-  res
-    .status(constants.HTTP_STATUS_BAD_REQUEST)
-    .send({ message: 'Введены некорректные данные' });
-}
-
-export const getAllUsers = (req, res) => {
+export const getAllUsers = (req, res, next) => {
   user
     .find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => {
-      sendInternalServerError(res);
-    });
+    .catch((err) => next(new ServerError(err.message)));
 };
 
-export const getUser = (req, res) => {
+export const getUser = (req, res, next) => {
   user
     .findById(req.params.userId)
     .then((data) => {
       if (data) {
         res.send({ data });
       } else {
-        sendNotFoundError(res);
+        throw (new NotFoundError(messageNotFoundError));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        sendBadRequestError(res);
+        next(new BadRequestError(messageBadRequestError));
       } else {
-        sendInternalServerError(res);
+        next(new ServerError(err.message));
       }
     });
 };
 
-export const createUser = (req, res) => {
+export const getMyUser = (req, res, next) => {
   user
-    .create(req.body)
+    .findById(req.user._id)
     .then((data) => {
-      res.send(data);
+      if (data) {
+        res.send({ data });
+      } else {
+        throw (new NotFoundError(messageNotFoundError));
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError(messageBadRequestError));
+      } else {
+        next(new ServerError(err.message));
+      }
+    });
+};
+
+export const createUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => user.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .then((document) => {
+      const userObject = document.toObject();
+      delete userObject.password;
+      res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        sendBadRequestError(res);
+        next(new BadRequestError(messageBadRequestError));
+      } else if (err.code === conflictErrorCode) {
+        next(new ConflictError(messageConflictError));
       } else {
-        sendInternalServerError(res);
+        next(new ServerError(err.message));
       }
     });
 };
 
-export const updateMyUser = (req, res) => {
+export const updateMyUser = (req, res, next) => {
   const { name, about } = req.body;
   user
     .findByIdAndUpdate(
@@ -74,19 +107,19 @@ export const updateMyUser = (req, res) => {
       if (data) {
         res.send(data);
       } else {
-        sendNotFoundError(res);
+        throw (new NotFoundError(messageNotFoundError));
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        sendBadRequestError(res);
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(messageBadRequestError));
       } else {
-        sendInternalServerError(res);
+        next(new ServerError(err.message));
       }
     });
 };
 
-export const updateMyUserAvatar = (req, res) => {
+export const updateMyUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   user
     .findByIdAndUpdate(
@@ -98,14 +131,32 @@ export const updateMyUserAvatar = (req, res) => {
       if (data) {
         res.send(data);
       } else {
-        sendNotFoundError(res);
+        throw (new NotFoundError(messageNotFoundError));
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        sendBadRequestError(res);
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(messageBadRequestError));
       } else {
-        sendInternalServerError(res);
+        next(new ServerError(err.message));
+      }
+    });
+};
+
+export const loginUser = (req, res, next) => {
+  const { email, password } = req.body;
+  return user.findUserByCredentials(email, password)
+    .then((data) => {
+      const token = jwt.sign({ _id: data._id }, 'super-secret-key', {
+        expiresIn: '7d',
+      });
+      res.send({ token });
+    })
+    .catch((err) => {
+      if (err.name === 'UnauthorizedError') {
+        next(new UnauthorizedError(messageUnauthorizedError));
+      } else {
+        next(new ServerError(err.message));
       }
     });
 };

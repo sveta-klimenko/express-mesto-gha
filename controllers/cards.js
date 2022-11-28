@@ -1,32 +1,23 @@
-import { constants } from 'http2';
 import { card } from '../models/card.js';
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+  ServerError,
+} from '../errors/index.js';
 
-function sendInternalServerError(res) {
-  res
-    .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-    .send({ message: 'Произошла серверная ошибка' });
-}
+const messageNotFoundError = 'Карточки с этими данными не существует';
+const messageBadRequestError = 'Введены некорректные данные';
+const messageForbiddenError = 'Недостаточно прав для совершения действия';
 
-function sendNotFoundError(res) {
-  res
-    .status(constants.HTTP_STATUS_NOT_FOUND)
-    .send({ message: 'Карточки с этими данными не существует' });
-}
-
-function sendBadRequestError(res) {
-  res
-    .status(constants.HTTP_STATUS_BAD_REQUEST)
-    .send({ message: 'Введены некорректные данные' });
-}
-
-export const getCards = (req, res) => {
+export const getCards = (req, res, next) => {
   card.find({}).populate('likes').populate('owner').then((cards) => res.send({ data: cards }))
-    .catch(() => {
-      sendInternalServerError(res);
+    .catch((err) => {
+      next(new ServerError(err.message));
     });
 };
 
-export const createCard = (req, res) => {
+export const createCard = (req, res, next) => {
   const { name, link } = req.body;
   card
     .create({ name, link, owner: req.user._id })
@@ -34,33 +25,36 @@ export const createCard = (req, res) => {
     .then((data) => res.send(data))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        sendBadRequestError(res);
+        next(new BadRequestError(messageBadRequestError));
       } else {
-        sendInternalServerError(res);
+        next(new ServerError(err.message));
       }
     });
 };
 
-export const deleteCard = (req, res) => {
+export const deleteCard = (req, res, next) => {
   card
-    .findByIdAndRemove(req.params.cardId).populate('likes').populate('owner')
+    .findById(req.params.cardId).populate('likes').populate('owner')
     .then((data) => {
-      if (data) {
-        res.send(data);
+      if (!data) {
+        throw (new NotFoundError(messageNotFoundError));
+      } else if (data.owner._id.toString() !== req.user._id) {
+        throw (new ForbiddenError(messageForbiddenError));
       } else {
-        sendNotFoundError(res);
+        return data.remove({})
+          .then((newData) => res.send({ newData }));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        sendBadRequestError(res);
+        next(new BadRequestError(messageBadRequestError));
       } else {
-        sendInternalServerError(res);
+        next(new ServerError(err.message));
       }
     });
 };
 
-export const likeCard = (req, res) => {
+export const likeCard = (req, res, next) => {
   card
     .findByIdAndUpdate(
       req.params.cardId,
@@ -71,19 +65,19 @@ export const likeCard = (req, res) => {
       if (data) {
         res.send(data);
       } else {
-        sendNotFoundError(res);
+        throw (new NotFoundError(messageNotFoundError));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        sendBadRequestError(res);
+        next(new BadRequestError(messageBadRequestError));
       } else {
-        sendInternalServerError(res);
+        next(new ServerError(err.message));
       }
     });
 };
 
-export const dislikeCard = (req, res) => {
+export const dislikeCard = (req, res, next) => {
   card
     .findByIdAndUpdate(
       req.params.cardId,
@@ -94,14 +88,14 @@ export const dislikeCard = (req, res) => {
       if (data) {
         res.send(data);
       } else {
-        sendNotFoundError(res);
+        throw (new NotFoundError(messageNotFoundError));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        sendBadRequestError(res);
+        next(new BadRequestError(messageBadRequestError));
       } else {
-        sendInternalServerError(res);
+        next(new ServerError(err.message));
       }
     });
 };
