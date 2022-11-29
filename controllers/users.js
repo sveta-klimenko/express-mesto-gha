@@ -82,7 +82,7 @@ export const createUser = (req, res, next) => {
     .then((document) => {
       const userObject = document.toObject();
       delete userObject.password;
-      res.send({ data: user });
+      res.send({ data: userObject });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -147,7 +147,7 @@ export const loginUser = (req, res, next) => {
   const { email, password } = req.body;
   return user.findUserByCredentials(email, password)
     .then((data) => {
-      const token = jwt.sign({ _id: data._id }, 'super-secret-key', {
+      const token = jwt.sign({ _id: data._id }, 'token-secret-salt', {
         expiresIn: '7d',
       });
       res.send({ token });
