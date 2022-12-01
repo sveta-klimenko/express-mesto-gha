@@ -49,7 +49,7 @@ export const deleteCard = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequestError(messageBadRequestError));
       } else {
-        next(new ServerError(err.message));
+        next(err);
       }
     });
 };
@@ -72,7 +72,7 @@ export const likeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequestError(messageBadRequestError));
       } else {
-        next(new ServerError(err.message));
+        next(err);
       }
     });
 };
@@ -95,7 +95,7 @@ export const dislikeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequestError(messageBadRequestError));
       } else {
-        next(new ServerError(err.message));
+        next(err);
       }
     });
 };
