@@ -13,7 +13,7 @@ const schemaRouteMe = Joi.alternatives().try(
 ).required();
 
 const schemaObjectRouteMe = Joi.object({
-  id: schemaRouteMe,
+  userId: schemaRouteMe,
 }).required();
 
 const schemaSignUp = Joi.object().keys({

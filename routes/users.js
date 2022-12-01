@@ -11,7 +11,7 @@ import {
   routeMeValidate,
   avatarValidate,
   profileValidate,
-} from '../utils/validator.js';
+} from '../utils/validatorUser.js';
 
 export const user = Router();
 

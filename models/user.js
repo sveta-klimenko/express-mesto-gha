@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import validator from 'validator';
-import { linkRegExp } from '../utils/validator.js';
+import { linkRegExp } from '../utils/validatorUser.js';
 import { UnauthorizedError } from '../errors/index.js';
 
 const userSchema = new mongoose.Schema({
