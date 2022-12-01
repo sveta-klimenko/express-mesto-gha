@@ -37,7 +37,7 @@ export const getUser = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequestError(messageBadRequestError));
       } else {
-        next(new ServerError(err.message));
+        next(err);
       }
     });
 };
@@ -56,7 +56,7 @@ export const getMyUser = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequestError(messageBadRequestError));
       } else {
-        next(new ServerError(err.message));
+        next(err);
       }
     });
 };
@@ -90,7 +90,7 @@ export const createUser = (req, res, next) => {
       } else if (err.code === conflictErrorCode) {
         next(new ConflictError(messageConflictError));
       } else {
-        next(new ServerError(err.message));
+        next(err);
       }
     });
 };

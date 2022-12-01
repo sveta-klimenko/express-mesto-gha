@@ -11,6 +11,7 @@ import {
   signInValidate,
 } from './utils/validatorUser.js';
 import { auth } from './middlewares/auth.js';
+import { NotFoundError } from './errors/index.js';
 
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
@@ -28,15 +29,14 @@ app.use(auth);
 app.use('/', user);
 app.use('/', card);
 
-app.all('/*', (req, res) => {
-  res
-    .status(constants.HTTP_STATUS_NOT_FOUND)
-    .send({ message: 'Страница не найдена' });
+app.all('/*', (req, res, next) => {
+  next(new NotFoundError('Такой страницы не существует'));
 });
 
 app.use(errors());
 app.use((err, req, res, next) => {
-  res.status(err.statusCode).send({ message: err.message });
+  res.status(err.statusCode || constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+    .send({ message: err.message });
   next();
 });
 

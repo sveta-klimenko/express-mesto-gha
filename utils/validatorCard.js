@@ -8,12 +8,12 @@ const celebrate = celebrator(
 );
 
 const schemaCard = Joi.object({
-  name: Joi.string().min(2).max(30),
-  link: Joi.string().pattern(linkRegExp),
+  name: Joi.string().min(2).max(30).required(),
+  link: Joi.string().pattern(linkRegExp).required(),
 }).required();
 
 const schemaId = Joi.object({
-  id: Joi.string().hex().length(24).required(),
+  cardId: Joi.string().hex().length(24).required(),
 }).required();
 
 export const validateCard = celebrate({ [Segments.BODY]: schemaCard });
