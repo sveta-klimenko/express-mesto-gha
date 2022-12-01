@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { linkRegExp } from '../utils/validator.js';
+import { linkRegExp } from '../utils/validatorCard.js';
 
 const cardSchema = new mongoose.Schema({
   name: {

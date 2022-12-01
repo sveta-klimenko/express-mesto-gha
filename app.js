@@ -9,7 +9,7 @@ import { card } from './routes/cards.js';
 import {
   signUpValidate,
   signInValidate,
-} from './utils/validator.js';
+} from './utils/validatorUser.js';
 import { auth } from './middlewares/auth.js';
 
 // Слушаем 3000 порт
