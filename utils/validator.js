@@ -29,6 +29,17 @@ const schemaSignIn = Joi.object().keys({
   password: Joi.string().required(),
 });
 
+export const schemaObjectProfile = Joi.object({
+  name: Joi.string().min(2).max(30),
+  about: Joi.string().min(2).max(30),
+
+}).required();
+export const schemaObjectAvatar = Joi.object({
+  avatar: Joi.string().pattern(linkRegExp),
+}).required();
+
+export const profileValidate = celebrate({ [Segments.BODY]: schemaObjectProfile });
+export const avatarValidate = celebrate({ [Segments.BODY]: schemaObjectAvatar });
 export const signUpValidate = celebrate({ [Segments.BODY]: schemaSignUp });
 export const signInValidate = celebrate({ [Segments.BODY]: schemaSignIn });
 export const routeMeValidate = celebrate({ [Segments.PARAMS]: schemaObjectRouteMe });
