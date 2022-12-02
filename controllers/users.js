@@ -15,12 +15,13 @@ const messageNotFoundError = 'Пользователя с этими данны�
 const messageBadRequestError = 'Введены некорректные данные';
 const messageConflictError = 'Пользователь с этим email уже зарегестрирован';
 const messageUnauthorizedError = 'Неверный логин или пароль';
+const messageServerError = 'Произошла серверная ошибка';
 
 export const getAllUsers = (req, res, next) => {
   user
     .find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => next(new ServerError(err.message)));
+    .catch(() => next(new ServerError(messageServerError)));
 };
 
 export const getUser = (req, res, next) => {
@@ -114,7 +115,7 @@ export const updateMyUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(messageBadRequestError));
       } else {
-        next(new ServerError(err.message));
+        next(new ServerError(messageServerError));
       }
     });
 };
@@ -138,7 +139,7 @@ export const updateMyUserAvatar = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(messageBadRequestError));
       } else {
-        next(new ServerError(err.message));
+        next(new ServerError(messageServerError));
       }
     });
 };
@@ -156,7 +157,7 @@ export const loginUser = (req, res, next) => {
       if (err.name === 'UnauthorizedError') {
         next(new UnauthorizedError(messageUnauthorizedError));
       } else {
-        next(new ServerError(err.message));
+        next(new ServerError(messageServerError));
       }
     });
 };

@@ -1,6 +1,6 @@
 import { Joi, celebrator, Segments } from 'celebrate';
 
-export const linkRegExp = /^https?:\/\/(www.)?[\w\-._~:/?#[\]@!$&'()*+,;=]*#?$/;
+export const linkRegExp = /^https?:\/\/(www.)?[\w-]+\.[\w-]+[\w\-._~:/?#[\]@!$&'()*+,;=]*#?$/;
 
 const celebrate = celebrator(
   { mode: 'full' }, // проверять весь запрос (если валидируем несколько частей)

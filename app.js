@@ -36,7 +36,7 @@ app.all('/*', (req, res, next) => {
 app.use(errors());
 app.use((err, req, res, next) => {
   res.status(err.statusCode || constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-    .send({ message: err.message });
+    .send({ message: err.statusCode === 500 ? 'Неизвестная ошибка' : err.message });
   next();
 });
 

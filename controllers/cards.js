@@ -9,11 +9,12 @@ import {
 const messageNotFoundError = 'Карточки с этими данными не существует';
 const messageBadRequestError = 'Введены некорректные данные';
 const messageForbiddenError = 'Недостаточно прав для совершения действия';
+const messageServerError = 'Произошла серверная ошибка';
 
 export const getCards = (req, res, next) => {
   card.find({}).populate('likes').populate('owner').then((cards) => res.send({ data: cards }))
-    .catch((err) => {
-      next(new ServerError(err.message));
+    .catch(() => {
+      next(new ServerError(messageServerError));
     });
 };
 
@@ -27,7 +28,7 @@ export const createCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(messageBadRequestError));
       } else {
-        next(new ServerError(err.message));
+        next(new ServerError(messageServerError));
       }
     });
 };
